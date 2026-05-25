@@ -1,10 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 
 function App() {
 
   const [file, setFile] = useState(null);
   const [transcript, setTranscript] = useState("");
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
@@ -13,6 +14,10 @@ function App() {
     setFile(e.target.files[0]);
 
   };
+
+  useEffect(() => {
+    fetchTranscriptions();
+  }, []);
 
   const handleUpload = async () => {
 
@@ -23,13 +28,9 @@ function App() {
     try {
       setLoading(true);
 
-      const response = await axios.post(
-        "http://localhost:5000/api/upload",
-        formData
-      );
-
+      const response = await axios.post("http://localhost:5000/api/upload", formData);
       setTranscript(response.data.transcript);
-
+      fetchTranscriptions();
     } catch (error) {
 
       console.log(error);
@@ -73,11 +74,9 @@ function App() {
 
       try {
         setLoading(true);
-        const response = await axios.post(
-          "http://localhost:5000/api/upload",
-          formData
-        );
+        const response = await axios.post("http://localhost:5000/api/upload", formData);
         setTranscript(response.data.transcript);
+        fetchTranscriptions();
       } catch (error) {
         console.log(error);
         alert("Recording upload failed");
@@ -94,14 +93,25 @@ function App() {
     setRecording(false);
   };
 
+  const fetchTranscriptions = async () => {
+
+  try {
+      const response = await axios.get("http://localhost:5000/api/upload/transcriptions");
+      setHistory(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-black text-white flex flex-col items-center justify-center px-4">
 
       <div className="absolute left-[-200px] top-[30%] w-[500px] h-[500px] bg-cyan-500/30 rounded-full blur-3xl" />
       <div className="absolute right-[-200px] top-[30%] w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-3xl" />
 
-      <div className="relative z-10 flex flex-col items-center w-full">
-
+      <div className="relative z-10 flex gap-8 w-full max-w-7xl items-center justify-end">
+      <div className="flex-1 max-w-2xl">
         <h1 className="text-5xl font-extrabold mb-4 bg-gradient-to-r from-white via-cyan-300 to-purple-400 bg-clip-text text-transparent">
           Speech To Text App
         </h1>
@@ -159,6 +169,36 @@ function App() {
             </div>
           )
         }
+      </div>
+      <div className="w-[350px] bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 h-[700px] overflow-y-auto shadow-2xl scrollbar-thin scrollbar-thumb-cyan-500">
+        {
+          history.length > 0 && (
+            <div className="mt-8 w-full max-w-xl">
+              <h2 className="text-2xl font-bold mb-4 text-white">
+                Previous Transcriptions
+              </h2>
+
+              <div className="space-y-4">
+                {
+                  history.map((item, index) => (
+
+                    <div key={index} className="bg-white/5 backdrop-blur-lg border border-white/10 p-4 rounded-2xl">
+
+                      <p className="text-cyan-300 text-sm mb-2">
+                        {item.filename}
+                      </p>
+
+                      <p className="text-zinc-300">
+                        {item.transcription}
+                      </p>
+                    </div>
+                  ))
+                }
+              </div>
+            </div>
+          )
+        }
+      </div>
       </div>
     </div>
   );
