@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const http = require("http");
 const { Server } = require("socket.io");
 require("dotenv").config();
+const authRoutes = require("./routes/authRoutes");
 const setupRealtime = require("./socket");
 
 const uploadRoutes = require("./routes/uploadRoutes");
@@ -29,6 +30,7 @@ mongoose.connect(process.env.MONGO_URI)
   console.log(error);
 });
 
+app.use("/api/auth", authRoutes);
 app.use("/api/upload", uploadRoutes);
 
 setupRealtime(io);

@@ -2,10 +2,11 @@ const express = require("express");
 const router = express.Router();
 const Transcription = require("../models/Transcription");
 const upload = require("../middleware/upload");
+const authMiddleware = require("../middleware/authMiddleware");
 const fs = require("fs");
 const deepgram = require("../config/deepgram");
 
-router.post("/", upload.single("media"), async (req, res) => {
+router.post("/", authMiddleware,upload.single("media"), async (req, res) => {
   try {
     const audioBuffer = fs.readFileSync(req.file.path);
     const response = await deepgram.listen.v1.media.transcribeFile(
@@ -22,6 +23,7 @@ router.post("/", upload.single("media"), async (req, res) => {
       filename: req.file.originalname,
       filepath: req.file.path,
       transcription: transcriptText,
+      user: req.user.id,
     });
 
     await newFile.save();
@@ -41,11 +43,11 @@ router.post("/", upload.single("media"), async (req, res) => {
   }
 });
 
-router.get("/transcriptions", async (req, res) => {
+router.get("/transcriptions", authMiddleware, async (req, res) => {
 
   try {
 
-    const transcriptions = await Transcription.find().sort({ uploadedAt: -1 });
+    const transcriptions = await Transcription.find({ user: req.user.id }).sort({ uploadedAt: -1 });
     res.json(transcriptions);
 
   } catch (error) {
