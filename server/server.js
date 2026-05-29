@@ -18,7 +18,9 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: ["http://localhost:5173", 
-      "https://speechify-ai.vercel.app"]
+      "https://speechify-ai.vercel.app"],
+    methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
