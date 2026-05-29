@@ -7,6 +7,8 @@ require("dotenv").config();
 const authRoutes = require("./routes/authRoutes");
 const setupRealtime = require("./socket");
 
+const PORT = process.env.PORT || 5000;
+
 const uploadRoutes = require("./routes/uploadRoutes");
 
 const app = express();
@@ -41,6 +43,6 @@ app.get("/", (req, res) => {
 
 });
 
-server.listen(process.env.PORT, () => {
-  console.log(`Server running on port ${process.env.PORT}`);
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

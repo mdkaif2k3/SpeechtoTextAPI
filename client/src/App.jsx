@@ -30,7 +30,7 @@ function App() {
         if (socketRef.current) {
       socketRef.current.disconnect();
     }
-    socketRef.current = io("http://localhost:5000", {
+    socketRef.current = io("https://speechtotextapi-naf3.onrender.com", {
     auth: {
         token: localStorage.getItem("token"),
     },
@@ -74,7 +74,7 @@ function App() {
     try {
       setLoading(true);
 
-      const response = await axios.post("http://localhost:5000/api/upload",
+      const response = await axios.post(" https://speechtotextapi-naf3.onrender.com/api/upload",
           formData,
           {
           headers: {
@@ -96,7 +96,7 @@ function App() {
   const handleAuth = async () => {
   try {
       if (isLogin) {
-        const response = await axios.post("http://localhost:5000/api/auth/login",
+        const response = await axios.post(" https://speechtotextapi-naf3.onrender.com/api/auth/login",
           {
             email,
             password,
@@ -108,7 +108,7 @@ function App() {
         setShowAuthModal(false);
         fetchTranscriptions();
       } else {
-        await axios.post("http://localhost:5000/api/auth/register",
+        await axios.post(" https://speechtotextapi-naf3.onrender.com/api/auth/register",
           {
             username,
             email,
@@ -170,7 +170,7 @@ function App() {
   const fetchTranscriptions = async () => {
 
   try {
-      const response = await axios.get("http://localhost:5000/api/upload/transcriptions",
+      const response = await axios.get(" https://speechtotextapi-naf3.onrender.com/api/upload/transcriptions",
         {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
