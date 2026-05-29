@@ -6,10 +6,7 @@ const Transcription = require("./models/Transcription")
 
 function setupRealtime(io) {
   io.on("connection", async (socket) => {
-    let connection = null;
     let isDeepgramReady = false;
-    let audioChunks = [];
-    let finalTranscript = "";
     const token = await socket.handshake.auth.token;
     if (!token) {
       console.log("No token");
@@ -28,22 +25,21 @@ function setupRealtime(io) {
     console.log("Client Connected");
 
     try {
-      socket.on("start-recording", async () => {
         finalTranscript = "";
         audioChunks = [];
         isDeepgramReady = false;
-        connection = await deepgram.listen.v1.connect({
+        const connection = await deepgram.listen.v1.connect({
           model: "nova-3",
           language: "en-US",
           smart_format: true,
         });
-
         connection.on("open", () => {
           console.log("Deepgram Realtime Connected");
           isDeepgramReady = true;
         });
 
         connection.on("message", (data) => {
+          console.log(data.type);
           try {
             if (data.type === "Results") {
               const transcript = data.channel.alternatives[0].transcript;
@@ -67,16 +63,13 @@ function setupRealtime(io) {
           console.log(error);
         });
 
-      connection.connect();
-      });
-
       socket.on("audio-data", (data) => {
-        if (isDeepgramReady) {
-            console.log("Sending Audio");
-            connection.sendMedia(data);
-        }
-        audioChunks.push(Buffer.from(data));
-      });
+            if (isDeepgramReady) {
+                console.log("Sending Audio");
+                connection.sendMedia(data);
+            }
+            audioChunks.push(Buffer.from(data));
+          });
 
       socket.on("stop-recording", async () => {
         console.log("Recording stopped");
@@ -102,9 +95,8 @@ function setupRealtime(io) {
             await newTranscription.save();
 
             console.log("Transcript saved to MongoDB");
-            connection.close();
-            connection = null;
             audioChunks = [];
+            finalTranscript = "";
         } catch (error) {
             console.log(error);
         }
@@ -114,6 +106,8 @@ function setupRealtime(io) {
         console.log("Client Disconnected");
         connection.close();
       });
+
+      connection.connect();
 
     } catch (error) {
       console.log(error);
