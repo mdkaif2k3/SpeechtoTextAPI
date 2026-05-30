@@ -74,10 +74,14 @@ function setupRealtime(io) {
       socket.on("stop-recording", async () => {
         console.log("Recording stopped");
         try {
+          const uploadDir = path.join(__dirname, "uploads");
+
+            if (!fs.existsSync(uploadDir)) {
+              fs.mkdirSync(uploadDir, { recursive: true });
+            }
             const filename = `recording-${Date.now()}.webm`;
             const filePath = path.join(
-            __dirname,
-            "uploads",
+            uploadDir,
             filename
             );
 
